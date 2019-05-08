@@ -1,37 +1,53 @@
-import org.openqa.selenium.Capabilities;
+import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
-import org.openqa.selenium.remote.DesiredCapabilities;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Parameters;
-import org.testng.annotations.Test;
+import org.testng.IHookCallBack;
+import org.testng.IHookable;
+import org.testng.ITestResult;
+import org.testng.annotations.*;
+import ru.yandex.qatools.allure.annotations.Attachment;
 import utils.LocatorsRepo;
 import utils.Utility;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BaseTest {
+public class BaseTest implements IHookable {
+    final static Logger logger = Logger.getLogger(BaseTest.class);
 
-    private WebDriver driver;
+    public WebDriver driver;
     public static String locale;
-    private static LocatorsRepo locators;
+    public static LocatorsRepo locators;
 
     @Parameters("browser")
     @BeforeClass
-    public void beforeClass(String browser) throws IOException {
-        // If the browser is Firefox, then do this
+    public void beforeClass(String browser) throws IOException, InterruptedException {
         locale = Utility.readPropertyOrEnv("locale", "en_US");
-        if(locale.equalsIgnoreCase("en_US") || locale.equalsIgnoreCase("fr_FR") || locale.equalsIgnoreCase("de_DE"))
+        if(locale.equalsIgnoreCase("en_US") || locale.equalsIgnoreCase("fr_FR") || locale.equalsIgnoreCase("de_DE") ||
+                locale.equalsIgnoreCase("it_IT") || locale.equalsIgnoreCase("pt_BR"))
             locators = new LocatorsRepo("./src/test/resources/"+locale+".properties");
-        else
-            locators = new LocatorsRepo("./src/test/resources/"+locale+"_ascii.properties");
+        else {
+            try {
+                Runtime.getRuntime().exec("native2ascii -encoding utf8 " + "./src/test/resources/" + locale + ".properties" + " ./src/test/resources/" + locale + "_ascii.properties");
+            } catch (Exception e) {
+                System.out.println("HEY Buddy ! U r Doing Something Wrong ");
+                e.printStackTrace();
+            }
+            Thread.sleep(5000);
+            locators = new LocatorsRepo("./src/test/resources/" + locale + "_ascii.properties");
+        }
         if(browser.equalsIgnoreCase("firefox")) {
             FirefoxOptions options = new FirefoxOptions();
             options.setAcceptInsecureCerts(true);
@@ -54,20 +70,50 @@ public class BaseTest {
         driver.manage().window().maximize();
     }
 
-    @Test
-    public void loginTest() throws InterruptedException {
-
-        Thread.sleep(10);
-        driver.findElement(locators.getbjectLocator("username")).sendKeys("admin");
-        driver.findElement(locators.getbjectLocator("password")).sendKeys("changeme");
-        driver.findElement(locators.getbjectLocator("login")).click();
-
+    @AfterMethod
+    public void afterMethod(ITestResult result){
+        logger.info("AfterMethod \n");
     }
 
     @AfterClass
     public void tearDown(){
         driver.close();
 //        driver.quit();
+    }
+
+
+    @Override
+    public void run(IHookCallBack callBack, ITestResult testResult){
+
+        callBack.runTestMethod(testResult);
+        try {
+            screenshot(testResult.getMethod().getMethodName(),driver);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Attachment(value = "{0}", type = "image/png")
+    public static byte[] screenshot(String testMethodName,WebDriver dr) throws Exception
+    {
+        try {
+            String currentDir = System.getProperty("user.dir");
+            String Screenshotpath = currentDir + "/screens/snapshot/";
+            File scrFile = ((TakesScreenshot) dr).getScreenshotAs(OutputType.FILE);
+            String imgFile= Screenshotpath + testMethodName + Instant.now().toEpochMilli() + ".jpg";
+            File imgf = new File(imgFile);
+            FileUtils.copyFile(scrFile, new File(imgFile));
+            return toByteArray(imgf);
+        }
+        catch(Exception e)
+        {
+            logger.error("Exception while taking screenshot : " + e.getMessage());
+        }
+        return new byte[0];
+    }
+
+    private static byte[] toByteArray(File file) throws IOException {
+        return Files.readAllBytes(Paths.get(file.getPath()));
     }
 
 
