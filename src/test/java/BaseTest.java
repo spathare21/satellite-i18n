@@ -1,3 +1,4 @@
+import io.qameta.allure.Attachment;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.OutputType;
@@ -12,7 +13,6 @@ import org.testng.IHookCallBack;
 import org.testng.IHookable;
 import org.testng.ITestResult;
 import org.testng.annotations.*;
-import ru.yandex.qatools.allure.annotations.Attachment;
 import utils.LocatorsRepo;
 import utils.Utility;
 
@@ -87,14 +87,14 @@ public class BaseTest implements IHookable {
 
         callBack.runTestMethod(testResult);
         try {
-            screenshot(testResult.getMethod().getMethodName(),driver);
+            saveScreenshot(testResult.getMethod().getMethodName(),driver);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     @Attachment(value = "{0}", type = "image/png")
-    public static byte[] screenshot(String testMethodName,WebDriver dr) throws Exception
+    private static byte[] saveScreenshot(String testMethodName,WebDriver dr) throws Exception
     {
         try {
             String currentDir = System.getProperty("user.dir");
