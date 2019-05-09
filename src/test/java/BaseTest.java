@@ -70,6 +70,11 @@ public class BaseTest implements IHookable {
         driver.manage().window().maximize();
     }
 
+    @BeforeMethod
+    public void beforeMethod(ITestResult result) throws Exception {
+        saveScreenshot(result.getMethod().getMethodName(),driver);
+    }
+
     @AfterMethod
     public void afterMethod(ITestResult result){
         logger.info("AfterMethod \n");
