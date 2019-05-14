@@ -15,12 +15,13 @@ import org.monte.media.Format;
 import org.monte.media.FormatKeys.MediaType;
 import org.monte.media.Registry;
 import org.monte.media.math.Rational;
+import org.monte.screenrecorder.ScreenRecorder;
 
 import static org.monte.media.AudioFormatKeys.*;
 import static org.monte.media.VideoFormatKeys.*;
 
 
-public class MyScreenRecorder extends MyScreenRecorder {
+public class MyScreenRecorder extends ScreenRecorder {
     public static MyScreenRecorder screenRecorder;
     public String name;
 
@@ -47,7 +48,7 @@ public class MyScreenRecorder extends MyScreenRecorder {
     }
 
     public static void startRecording(String methodName) throws Exception {
-        File file = new File("./recordings/");
+        File file = new File("./target/recordings/");
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int width = screenSize.width;
@@ -64,7 +65,7 @@ public class MyScreenRecorder extends MyScreenRecorder {
                 new Format(MediaTypeKey, MediaType.VIDEO, EncodingKey, ENCODING_AVI_TECHSMITH_SCREEN_CAPTURE,
                         CompressorNameKey, ENCODING_AVI_TECHSMITH_SCREEN_CAPTURE, DepthKey, 24, FrameRateKey,
                         Rational.valueOf(15), QualityKey, 1.0f, KeyFrameIntervalKey, 15 * 60),
-                new Format(MediaTypeKey, MediaType.VIDEO, EncodingKey, "black", FrameRateKey, Rational.valueOf(30)),
+                new Format(MediaTypeKey, MediaType.VIDEO, EncodingKey, "white", FrameRateKey, Rational.valueOf(30)),
                 null, file, methodName);
 
         screenRecorder.start();
