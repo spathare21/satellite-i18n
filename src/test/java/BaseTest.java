@@ -14,6 +14,7 @@ import org.testng.IHookable;
 import org.testng.ITestResult;
 import org.testng.annotations.*;
 import utils.LocatorsRepo;
+import utils.MyScreenRecorder;
 import utils.Utility;
 
 import java.io.File;
@@ -33,7 +34,7 @@ public class BaseTest implements IHookable {
 
     @Parameters("browser")
     @BeforeClass
-    public void beforeClass(String browser) throws IOException, InterruptedException {
+    public void beforeClass(String browser) throws Exception {
         locale = Utility.readPropertyOrEnv("locale", "en_US");
         if(locale.equalsIgnoreCase("en_US") || locale.equalsIgnoreCase("fr_FR") || locale.equalsIgnoreCase("de_DE") ||
                 locale.equalsIgnoreCase("it_IT") || locale.equalsIgnoreCase("pt_BR"))
@@ -66,17 +67,19 @@ public class BaseTest implements IHookable {
             System.setProperty("webdriver.chrome.driver", "../satellite/library/chromedriver");
             driver = new ChromeDriver(options);
         }
-        driver.get("https://qeblade36.rhq.lab.eng.bos.redhat.com");
+        driver.get("https://host-8-249-81.host.centralci.eng.rdu2.redhat.com");
         driver.manage().window().maximize();
     }
 
     @BeforeMethod
     public void beforeMethod(ITestResult result) throws Exception {
+        MyScreenRecorder.startRecording(result.getMethod().getMethodName());
         saveScreenshot(result.getMethod().getMethodName(),driver);
     }
 
     @AfterMethod
-    public void afterMethod(ITestResult result){
+    public void afterMethod(ITestResult result) throws Exception {
+        MyScreenRecorder.stopRecording();
         logger.info("AfterMethod \n");
     }
 
