@@ -15,6 +15,7 @@ import org.testng.ITestResult;
 import org.testng.annotations.*;
 import utils.LocatorsRepo;
 import utils.MyScreenRecorder;
+import utils.ReadProperty;
 import utils.Utility;
 
 import java.io.File;
@@ -30,12 +31,14 @@ public class BaseTest implements IHookable {
 
     public WebDriver driver;
     public static String locale;
+    public String hostname;
     public static LocatorsRepo locators;
 
     @Parameters("browser")
     @BeforeClass
     public void beforeClass(String browser) throws Exception {
         locale = Utility.readPropertyOrEnv("locale", "en_US");
+        hostname = Utility.readPropertyOrEnv("hostname","hostname");
         if(locale.equalsIgnoreCase("en_US") || locale.equalsIgnoreCase("fr_FR") || locale.equalsIgnoreCase("de_DE") ||
                 locale.equalsIgnoreCase("it_IT") || locale.equalsIgnoreCase("pt_BR"))
             locators = new LocatorsRepo("./src/test/resources/"+locale+".properties");
@@ -67,7 +70,7 @@ public class BaseTest implements IHookable {
             System.setProperty("webdriver.chrome.driver", "../satellite/library/chromedriver");
             driver = new ChromeDriver(options);
         }
-        driver.get("https://host-8-249-81.host.centralci.eng.rdu2.redhat.com");
+        driver.get("https://"+ReadProperty.getConfig(hostname));
         driver.manage().window().maximize();
     }
 
