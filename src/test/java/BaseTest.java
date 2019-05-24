@@ -1,3 +1,4 @@
+import io.github.bonigarcia.wdm.WebDriverManager;
 import io.qameta.allure.Attachment;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -60,6 +61,7 @@ public class BaseTest implements IHookable {
             profile.setAcceptUntrustedCertificates(true);
             options.setCapability("firefox_profile",profile);
             System.setProperty("webdriver.gecko.driver", "../satellite/library/geckodriver");
+//            WebDriverManager.firefoxdriver().setup();
             driver = new FirefoxDriver(options);
             // If browser is Chrome, then do this
         }else if (browser.equalsIgnoreCase("chrome")) {
@@ -68,6 +70,7 @@ public class BaseTest implements IHookable {
             prefs.put("intl.accept_languages", locale);
             options.setExperimentalOption("prefs", prefs);
             System.setProperty("webdriver.chrome.driver", "../satellite/library/chromedriver");
+//            WebDriverManager.chromedriver().setup();
             driver = new ChromeDriver(options);
         }
         driver.get("https://"+ReadProperty.getConfig(hostname));
